@@ -6,12 +6,20 @@
 	import flash.utils.getDefinitionByName;
 	
 	public class Ball extends MovieClip {
+		var mInput:InputManager;
 		var mPhysicsBody:PhysicsBody;
 
 		var grabbed:Boolean = false;
 		
-		public function Ball() {
-			mPhysicsBody = new PhysicsBody(this);
+		public function Ball(pInput:InputManager) {
+			mInput = pInput;
+			
+			var rand:Number = Math.random() * 2;
+			
+			scaleX = rand;
+			scaleY = rand;
+			
+			mPhysicsBody = new PhysicsBody(this, rand);
 			
 			addEventListener(MouseEvent.MOUSE_DOWN, DragBall);
 			addEventListener(MouseEvent.MOUSE_UP, DropBall);
@@ -21,7 +29,7 @@
 		{
 			mPhysicsBody.Update();
 		}
-		
+
 		private function DragBall(e:Event) {
 			startDrag();
 			grabbed = true;

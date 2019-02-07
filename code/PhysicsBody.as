@@ -4,76 +4,93 @@
 	import flash.events.EventDispatcher;
 	import flash.events.MouseEvent;
 	import flash.utils.getDefinitionByName;
+	import flash.geom.Vector3D;
 	
 	public class PhysicsBody {
 		var p:MovieClip;
 		
 		var radius:Number;
+		var mass:Number;
 		
-		var vX:Number = 5;
-		var vY:Number = 0;
+		var v:Vector3D = new Vector3D(5, 0, 0);
+		var s:Vector3D = new Vector3D(0.3, 1.8, 0);
+		var m:Vector3D = new Vector3D(0, 0, 0);
 		
-		var mX:Number = 0;
-		var mY:Number = 0;
-		
-		var elasticity:Number = 0.75;
-		var gravity:Number = 0.99;
+		var elasticity:Number = 0.85;
+		var gravity:Number = 1;
 		var friction:Number = 0.99;
 		
-		var moveSpeed:int = 5;
-		var moveDirection:int = 1;
-
-		public function PhysicsBody(pParent:MovieClip) {
+		
+		public function PhysicsBody(pParent:MovieClip, pMass:Number) {
 			p = pParent;
 			
+			mass = (pMass / 2) + 1;
 			radius = p.width / 2;
 		}
 
 		public function Update()
 		{
+			CheckInput();
+			
 			if(!p.grabbed)
 			{
-				if(mX || mY != 0)
+				if(m.x || m.y != 0)
 				{
-					vX += p.stage.mouseX - mX;
-					vY += p.stage.mouseY - mY;
+					v.x += p.stage.mouseX - m.x;
+					v.y += p.stage.mouseY - m.y;
 					
-					mX = 0;
-					mY = 0;
+					m.x = 0;
+					m.y = 0;
 				}
 				
-				vX *= friction;
-				vY *= friction;
+				v.x *= friction;
+				v.y *= friction;
 				
-				vY += gravity;
+				v.y += (gravity * mass);
 				
-				if(Math.abs(vX) < 0.03)
+				if(Math.abs(v.x) < 0.03)
 				{
-					vX = 0;
-				}
-				if(Math.abs(vY) < 0.03)
-				{
-					vY = 0;
+					v.x = 0;
 				}
 				
-				p.x += vX;
-				p.rotation += vX;
+				p.x += v.x;
+				p.rotation += v.x;
 				
-				p.y += vY;
+				p.y += v.y;
 			}
 			else
 			{
-				if(mX && mY == 0)
+				if(m.x && m.y == 0)
 				{
-					vX = 0;
-					vY = 0;
+					v.x = 0;
+					v.y = 0;
 				}
 				
-				mX = p.stage.mouseX;
-				mY = p.stage.mouseY;
+				m.x = p.stage.mouseX;
+				m.y = p.stage.mouseY;
 			}
 			
 			CheckPosition();
+		}
+		
+		private function CheckInput()
+		{
+			if(p.mInput.left)
+			{
+				v.x -= s.x;
+			}
+			if(p.mInput.right)
+			{
+				v.x += s.x;
+			}
+			if(p.mInput.up)
+			{
+				v.y -= s.y;
+			}
+			if(p.mInput.down)
+			{
+				v.y += s.y;
+			}
 		}
 		
 		private function CheckPosition()
@@ -82,17 +99,13 @@
 			{
 				p.x = p.stage.stageWidth - radius;
 				
-				vX = HitEdge(vX);
-				
-				moveDirection *= -1;
+				v.x = HitEdge(v.x);
 			}
 			if(p.x - radius < 0)
 			{
 				p.x = 0 + radius;
 
-				vX = HitEdge(vX);
-				
-				moveDirection *= -1;
+				v.x = HitEdge(v.x);
 			}
 			
 			
@@ -100,13 +113,13 @@
 			{
 				p.y = p.stage.stageHeight - radius;
 				
-				vY = HitEdge(vY);
+				v.y = HitEdge(v.y);
 			}
 			if(p.y - radius < 0)
 			{
 				p.y = 0 + radius;
 				
-				vY = HitEdge(vY);
+				v.y = HitEdge(v.y);
 			}
 		}
 		
